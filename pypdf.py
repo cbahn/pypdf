@@ -8,9 +8,6 @@ import re
 
 ## PDF Helper class ##
 class PDFBuilder:
-
-
-
     def __init__(self):
         # Create the pdf and initialize a page
         self.pdf = FPDF('L','mm','Letter')
@@ -31,35 +28,23 @@ class PDFBuilder:
         X_DOT_SIZE = 2
         Y_DOT_SIZE = 2
 
+        # Place dots in each of the corners of the page
+        # I'm not totally sure, but I think this helps it scale consistently
+        # when the pdf is printed.
         for x in [X_MARGIN, X_PAGE_SIZE - X_MARGIN - X_DOT_SIZE]:
             for y in [Y_MARGIN, Y_PAGE_SIZE - Y_MARGIN - Y_DOT_SIZE]:
-                self.pdf.image("dot.png",x,y,X_DOT_SIZE,Y_DOT_SIZE)                
-
-        self.pdf.text(30,30,f"x margin: {X_MARGIN}")
-        self.pdf.text(30,36,f"y margin: {Y_MARGIN}")
-
-        def test_dot(x,y):
-            self.pdf.image("dot.png",x,y,3,3)
-            self.pdf.text(x-10,y+10,f"{x}mm x {y}mm")
-
-        test_dot(50,50)
-        test_dot(200,50)
+                self.pdf.image("dot.png",x,y,X_DOT_SIZE,Y_DOT_SIZE)
 
 
-
-        # I'm not totally sure, but it seems the PDF prints differently
-        # based on the leftmost and topmost item placed on the page.
-        # Putting this "_" in the upper left seems to fix it.
-        # self.pdf.text(0,0,"_")
 
     def add_image(self, filename, location):
         # These values define how many pixels away from the corner each
         # image should be placed on the page (vertically and horizontally)
-        X_OFFSETS = [23,80,139,198.5]
-        Y_OFFSETS = [17,119]
+        X_OFFSETS = [21,83.3,145.7,208]
+        Y_OFFSETS = [17.5,118.7]
         IMAGE_SIZE = {
-            "x": 52.08,
-            "y": 80.78,
+            "x": 50.4,
+            "y": 78.2,
         }
 
         if location < 0 or location > 7:
@@ -177,7 +162,7 @@ def main():
     0 1 2 3
     4 5 6 7
 
-    Images should be 510x770
+    Images should be 504x782
 
     When the paper is put into the paper tray, it should be placed sticker-side down.
     The upper left corner of the pdf will be printed to the corner of the page deepest in the printer on the left side.
@@ -207,6 +192,7 @@ def main():
     if args.output:
         output_file = args.output
 
+    pdf.add_test_stuff()
     pdf.output(output_file)
     print(f"Successfully created {output_file}")
 
