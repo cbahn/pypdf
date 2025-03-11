@@ -4,14 +4,12 @@ import os
 import sys
 import re
 
-## PDF Helper class ##
 
+
+## PDF Helper class ##
 class PDFBuilder:
 
-    # These values define how many pixels away from the corner each
-    # image should be placed on the page (vertically and horizontally)
-    X_OFFSETS = [20,80,139,198.5]
-    Y_OFFSETS = [17,114.5]
+
 
     def __init__(self):
         # Create the pdf and initialize a page
@@ -21,23 +19,60 @@ class PDFBuilder:
     def add_page(self):
         self.pdf.add_page()
 
+        # Size of letter paper in mm
+        X_PAGE_SIZE = 279.4
+        Y_PAGE_SIZE = 215.9
+
+        # Amount of space away from edge to place dots
+        X_MARGIN = 0
+        Y_MARGIN = 0
+
+        # Size of dot (mm)
+        X_DOT_SIZE = 2
+        Y_DOT_SIZE = 2
+
+        for x in [X_MARGIN, X_PAGE_SIZE - X_MARGIN - X_DOT_SIZE]:
+            for y in [Y_MARGIN, Y_PAGE_SIZE - Y_MARGIN - Y_DOT_SIZE]:
+                self.pdf.image("dot.png",x,y,X_DOT_SIZE,Y_DOT_SIZE)                
+
+        self.pdf.text(30,30,f"x margin: {X_MARGIN}")
+        self.pdf.text(30,36,f"y margin: {Y_MARGIN}")
+
+        def test_dot(x,y):
+            self.pdf.image("dot.png",x,y,3,3)
+            self.pdf.text(x-10,y+10,f"{x}mm x {y}mm")
+
+        test_dot(50,50)
+        test_dot(200,50)
+
+
+
         # I'm not totally sure, but it seems the PDF prints differently
         # based on the leftmost and topmost item placed on the page.
         # Putting this "_" in the upper left seems to fix it.
-        self.pdf.text(0,0,"_")
+        # self.pdf.text(0,0,"_")
 
     def add_image(self, filename, location):
+        # These values define how many pixels away from the corner each
+        # image should be placed on the page (vertically and horizontally)
+        X_OFFSETS = [23,80,139,198.5]
+        Y_OFFSETS = [17,119]
+        IMAGE_SIZE = {
+            "x": 52.08,
+            "y": 80.78,
+        }
+
         if location < 0 or location > 7:
             raise ValueError("location syntax out of range")
     
         if location <= 3:
-            y = self.Y_OFFSETS[0]
+            y = Y_OFFSETS[0]
         else:
-            y = self.Y_OFFSETS[1]
+            y = Y_OFFSETS[1]
             location -= 4
         
-        x = self.X_OFFSETS[location]
-        self.pdf.image(filename, x, y, 50, 75)
+        x = X_OFFSETS[location]
+        self.pdf.image(filename, x, y, IMAGE_SIZE["x"], IMAGE_SIZE["y"])
 
     def draw_coordinates(self):
         # For putting coordinates all over the page for troubleshooting purposes
@@ -48,6 +83,20 @@ class PDFBuilder:
 
     def output(self, filename):
         self.pdf.output(filename, "F")
+
+def scale_coord(x,y):
+    """
+    Input: where you want it in mm
+    output: where you should actually put it to acheive that placement
+    """
+    ORIGIN = {
+        x: 139.7,
+        y: 107.95,
+    }
+    SCALE = 0.96333
+    x_result = x*SCALE + ORIGIN.x*(1-SCALE)
+    y_result = y*SCALE + ORIGIN.y*(1-SCALE)
+    return (x_result,y_result)
 
 class LayoutCalculator:
     def __init__(self, layout):
